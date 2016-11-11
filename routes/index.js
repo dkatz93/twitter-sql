@@ -29,6 +29,7 @@ module.exports = function makeRouterWithSockets (io) {
   router.get('/tweets/:id', function(req, res, next){
     client.query(
       `SELECT * FROM tweets WHERE id = ${req.params.id}`, function(err,data){
+        if (err) return console.error(err);
         res.render('index', {
           title: 'Twitter.js',
           tweets: data.rows // an array of only one element ;-)
@@ -42,7 +43,8 @@ module.exports = function makeRouterWithSockets (io) {
       JOIN users ON users.id = tweets.userid 
       WHERE users.name = $1`, [req.params.name], function(err,data){
         // console.log(data)
-        res.render('index', {
+          if (err) return console.error(err);
+          res.render('index', {
           title: 'Twitter.js',
           tweets: data.rows,
           showForm: true
@@ -57,14 +59,19 @@ module.exports = function makeRouterWithSockets (io) {
   // create a new tweet
   router.post('/tweets', function(req, res, next){
     client.query('SELECT * FROM users WHERE name = $1', [req.body.name], function(err, data){
+      if (err) return console.error(err);
       if(data.rows[0]){
        client.query('INSERT INTO tweets (userid, content) VALUES ($1, $2)', [data.rows[0].id, req.body.content], function(err,data){
+          if (err) return console.error(err);
        })
      } else {
       client.query('INSERT INTO users (name, pictureurl) VALUES ($1, $2)', [req.body.name, 'http://i.imgur.com/MItGWVS.jpg'], function(err,data){
+          if (err) return console.error(err);
        })
       client.query('SELECT * FROM users WHERE name = $1', [req.body.name], function(err, data){
+          if (err) return console.error(err);
           client.query('INSERT INTO tweets (userid, content) VALUES ($1, $2)', [data.rows[0].id, req.body.content], function(err,data){
+            if (err) return console.error(err);
         })
       })
 
